@@ -9,6 +9,7 @@ import { PrismaModule } from './shared/database/prisma.module';
 import { QueueModule } from './shared/queue/queue.module';
 import { ObservabilityModule } from './shared/observability/observability.module';
 import { ProductsModule } from './modules/products/products.module';
+import { OrdersModule } from './modules/orders/orders.module';
 import type { IEnvProvider } from './shared/env';
 
 @Module({
@@ -18,6 +19,7 @@ import type { IEnvProvider } from './shared/env';
     QueueModule,
     ObservabilityModule,
     ProductsModule,
+    OrdersModule,
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [EnvModule],

@@ -12,4 +12,5 @@ export interface IProductRepository {
     params: CursorPaginationParams,
   ): Promise<CursorPaginationResult<Product>>;
   findById(id: string): Promise<Product | null>;
+  findManyById(ids: string[]): Promise<Product[]>;
 }

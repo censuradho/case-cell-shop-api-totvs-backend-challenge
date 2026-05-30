@@ -39,4 +39,8 @@ export class PrismaProductRepository implements IProductRepository {
   async findById(id: string): Promise<Product | null> {
     return this.prisma.product.findUnique({ where: { id } });
   }
+
+  async findManyById(ids: string[]): Promise<Product[]> {
+    return this.prisma.product.findMany({ where: { id: { in: ids } } });
+  }
 }
