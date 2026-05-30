@@ -53,6 +53,16 @@ Sempre nomes completos e descritivos. Nunca abreviações como `p`, `r`, `v`, `i
 ### IDs
 Chaves primárias são strings geradas com `nanoid()`.
 
+### Swagger
+Todo novo endpoint deve ter documentação Swagger completa:
+- `@ApiTags` no controller
+- `@ApiOperation` com `summary` e `description` explicando o que o endpoint faz
+- `@ApiResponse` para cada status possível (sucesso, erros de negócio, validação, não encontrado)
+- `@ApiParam` / `@ApiQuery` para parâmetros de rota e query string
+- `@ApiHeader` para headers obrigatórios (ex: `Idempotency-Key`)
+- DTOs de request e response com `@ApiProperty` em todos os campos, incluindo `description`, `example` e `required`
+- Enums documentados com `@ApiProperty({ enum: MyEnum })`
+
 ### Valores monetários
 Sempre usar o tipo `Decimal` nativo do Prisma (`@db.Decimal(10, 2)` no schema). Nunca usar `Float` ou `Int` para representar dinheiro.
 
