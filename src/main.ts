@@ -16,9 +16,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('v1');
   app.enableCors({
-    origin:
-      process.env.CORS_ORIGIN?.split(',')?.map((origin) => origin.trim()) ??
-      '*',
+    origin: '*',
   });
 
   app.useGlobalPipes(
