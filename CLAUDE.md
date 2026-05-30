@@ -53,6 +53,9 @@ Sempre nomes completos e descritivos. Nunca abreviações como `p`, `r`, `v`, `i
 ### IDs
 Chaves primárias são strings geradas com `nanoid()`.
 
+### Valores monetários
+Sempre usar o tipo `Decimal` nativo do Prisma (`@db.Decimal(10, 2)` no schema). Nunca usar `Float` ou `Int` para representar dinheiro.
+
 ## Comandos
 
 ```bash
