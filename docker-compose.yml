@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16
+    container_name: ccs_api_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ccs_user
+      POSTGRES_PASSWORD: ccs_pass
+      POSTGRES_DB: ccs_db
+    ports:
+      - "5423:5432"
+    volumes:
+      - ccs_api_postgres_data:/var/lib/postgresql/data
+    networks:
+      - ccs_api_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ccs_api_redis
+    restart: always
+    ports:
+      - "6397:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - ccs_api_network
+    command: redis-server --appendonly yes
+
+volumes:
+  ccs_api_postgres_data:
+  redis_dev_data:
+
+networks:
+  ccs_api_network:
+    driver: bridge
