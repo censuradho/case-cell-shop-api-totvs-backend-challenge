@@ -53,6 +53,22 @@ Sempre nomes completos e descritivos. Nunca abreviações como `p`, `r`, `v`, `i
 ### IDs
 Chaves primárias são strings geradas com `nanoid()`.
 
+### Testes unitários
+Toda classe que contém lógica de negócio **deve** ter arquivo `.spec.ts` correspondente:
+- `UseCase`: sempre tem teste — cobrir caminho feliz, cada erro de negócio e casos de borda
+- `Query`: só tem teste se contiver lógica observável — cache-aside, validação de existência, transformação de dados. Query que apenas delega ao repositório não precisa de teste
+- Dependências externas (repositórios, cache, fila) devem ser mockadas com `vitest-mock-extended`
+- Os testes ficam em `test/` na raiz do projeto, espelhando a estrutura de pastas do módulo correspondente (ex: `test/modules/products/application/queries/get-products.query.spec.ts`)
+- Nomenclatura de `describe`/`it` em português, descrevendo o comportamento esperado (ex: `it('deve lançar erro quando estoque for insuficiente')`)
+- Nunca testar detalhes de implementação — testar comportamento observável
+- Mínimo de cobertura esperado: todos os branches de negócio (condicionais de domínio)
+
+### Testes de Integração (Concorrência e Cache)
+- **Cenários obrigatórios**: Pelo menos um teste deve validar a consistência de estoque sob concorrência e o comportamento de cache-aside.
+- **Ambiente**: Diferente dos testes unitários, os testes de integração **não** devem usar mocks para o banco de dados (Prisma) ou cache (Redis). Eles devem interagir diretamente com containers reais de teste (utilizando o Docker Compose).
+- **Limpeza**: Garantir que cada teste limpe as tabelas do banco e dê `FLUSHALL` no Redis antes ou depois de rodar (`beforeEach`/`afterEach`) para evitar interferência entre os cenários.
+- **Nomenclatura**: Arquivos de integração devem usar a extensão `.integration.spec.ts` para separação clara na execução do Vitest.
+
 ### Swagger
 Todo novo endpoint deve ter documentação Swagger completa:
 - `@ApiTags` no controller
