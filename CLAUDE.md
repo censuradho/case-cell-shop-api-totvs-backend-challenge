@@ -79,6 +79,30 @@ Todo novo endpoint deve ter documentação Swagger completa:
 - DTOs de request e response com `@ApiProperty` em todos os campos, incluindo `description`, `example` e `required`
 - Enums documentados com `@ApiProperty({ enum: MyEnum })`
 
+### Observabilidade
+Todo Controller, UseCase, Query com lógica e Worker BullMQ **deve** seguir este padrão obrigatoriamente:
+
+#### 1. Logs estruturados
+Usar sempre `Logger` do NestJS com objeto estruturado — nunca string pura:
+```ts
+this.logger.log({ requestId, orderId, message: 'Pedido criado', context: 'CreateOrderUseCase' });
+this.logger.error({ requestId, orderId, message: 'Estoque insuficiente', context: 'CreateOrderUseCase', error: err.message });
+```
+Campos obrigatórios por contexto:
+- **Controllers/UseCases/Queries:** `requestId`, `message`, `context`
+- **Quando envolver pedido:** `orderId` obrigatório adicional
+- **Workers BullMQ:** `requestId` (extraído dos metadados do job), `orderId`, `message`, `context`
+
+#### 2. Métricas via `AppLogger` (ObservabilityService)
+Emitir eventos explícitos de métrica como logs estruturados com campo `metric`:
+- Cache: `{ metric: 'cache.hit', key, context }` e `{ metric: 'cache.miss', key, context }`
+- Worker: `{ metric: 'queue.job.success', orderId, durationMs, context }` e `{ metric: 'queue.job.failure', orderId, error, context }`
+
+#### 3. Distributed tracing (requestId propagado)
+- O `requestId` gerado no `RequestIdMiddleware` **deve ser passado como metadado do job BullMQ** ao publicar na fila
+- O Worker **deve extrair o `requestId` dos metadados do job** e usá-lo em todos os seus logs
+- Isso cria o vínculo de rastreabilidade request → queue → worker (distributed tracing conceitual)
+
 ### Valores monetários
 Sempre usar o tipo `Decimal` nativo do Prisma (`@db.Decimal(10, 2)` no schema). Nunca usar `Float` ou `Int` para representar dinheiro.
 
