@@ -69,6 +69,10 @@ Toda classe que contém lógica de negócio **deve** ter arquivo `.spec.ts` corr
 - **Limpeza**: Garantir que cada teste limpe as tabelas do banco e dê `FLUSHALL` no Redis antes ou depois de rodar (`beforeEach`/`afterEach`) para evitar interferência entre os cenários.
 - **Nomenclatura**: Arquivos de integração devem usar a extensão `.integration.spec.ts` para separação clara na execução do Vitest.
 
+### Classes DTO e entidades
+- Entidades de domínio sem comportamento devem ser declaradas como `interface`, não `class`
+- Classes DTO (que precisam de decorators Swagger/class-validator) devem usar `!` em todas as propriedades: `id!: string` — evita o erro `strictPropertyInitialization` sem precisar de constructor
+
 ### Swagger
 Todo novo endpoint deve ter documentação Swagger completa:
 - `@ApiTags` no controller
@@ -78,6 +82,7 @@ Todo novo endpoint deve ter documentação Swagger completa:
 - `@ApiHeader` para headers obrigatórios (ex: `Idempotency-Key`)
 - DTOs de request e response com `@ApiProperty` em todos os campos, incluindo `description`, `example` e `required`
 - Enums documentados com `@ApiProperty({ enum: MyEnum })`
+- Quando o retorno é uma entidade (interface), documentar o response com `schema` inline no `@ApiResponse` em vez de criar um DTO só para Swagger
 
 ### Observabilidade
 Todo Controller, UseCase, Query com lógica e Worker BullMQ **deve** seguir este padrão obrigatoriamente:
