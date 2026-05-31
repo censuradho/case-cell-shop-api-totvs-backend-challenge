@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.env
+.env.exemple
+CLAUDE.md
+.prettierrc
+README.md
+eslint.config.js
+
+coverage
