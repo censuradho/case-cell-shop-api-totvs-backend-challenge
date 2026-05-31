@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: ccs_api_prod_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ccs_user
+      POSTGRES_PASSWORD: ccs_pass
+      POSTGRES_DB: ccs_db
+    ports:
+      - '5433:5432'
+    volumes:
+      - ccs_api_prod_postgres_data:/var/lib/postgresql/data
+    networks:
+      - ccs_api_prod_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ccs_user -d ccs_db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ccs_api_prod_redis
+    restart: always
+    ports:
+      - '6380:6379'
+    volumes:
+      - ccs_api_prod_redis_data:/data
+    networks:
+      - ccs_api_prod_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ccs_api_prod_api
+    restart: always
+    ports:
+      - '3333:3333'
+    environment:
+      DATABASE_URL: postgresql://ccs_user:ccs_pass@postgres:5432/ccs_db
+      REDIS_URL: redis://redis:6379
+      PORT: '3333'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ccs_api_prod_network
+
+volumes:
+  ccs_api_prod_postgres_data:
+  ccs_api_prod_redis_data:
+
+networks:
+  ccs_api_prod_network:
+    driver: bridge
