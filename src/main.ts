@@ -7,6 +7,7 @@ import {
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { swaggerConfig } from './shared/config/swagger';
+import { setupBullBoard } from './shared/config/bull-board';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -28,6 +29,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  await setupBullBoard(app);
 
   const documentFactory = () =>
     SwaggerModule.createDocument(app, swaggerConfig);
