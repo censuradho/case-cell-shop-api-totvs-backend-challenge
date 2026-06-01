@@ -7,18 +7,13 @@ const root = __dirname;
 
 export default defineConfig({
   test: {
-    include: [
-      'src/**/*.spec.ts',
-      'src/**/*.test.ts',
-      'test/**/*.spec.ts',
-      'test/**/*.test.ts',
-    ],
-    exclude: ['**/*.integration.spec.ts'],
+    include: ['test/**/*.integration.spec.ts'],
     environment: 'node',
     globals: true,
-    coverage: {
-      reporter: ['text', 'html'],
-    },
+    globalSetup: ['./test/integration/global-setup.ts'],
+    setupFiles: ['./test/integration/env-setup.ts'],
+    maxWorkers: 1,
+    testTimeout: 30_000,
   },
   resolve: {
     alias: {
