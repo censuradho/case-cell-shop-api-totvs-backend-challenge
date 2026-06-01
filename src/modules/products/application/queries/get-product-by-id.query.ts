@@ -6,7 +6,7 @@ import { AppLogger } from '@/shared/observability/app-logger.service';
 import type { Product } from '../../domain/product.entity';
 import { PRODUCT_ERRORS } from '../../domain/errors/product.errors';
 
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 60 * 1000;
 
 @Injectable()
 export class GetProductByIdQuery {
