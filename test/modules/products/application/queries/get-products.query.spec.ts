@@ -50,7 +50,11 @@ describe('GetProductsQuery', () => {
     await query.execute(requestId);
 
     expect(logger.metric).toHaveBeenCalledWith(
-      expect.objectContaining({ metric: 'cache.hit', key: CACHE_KEY, requestId }),
+      expect.objectContaining({
+        metric: 'cache.hit',
+        key: CACHE_KEY,
+        requestId,
+      }),
     );
   });
 
@@ -82,7 +86,11 @@ describe('GetProductsQuery', () => {
     await query.execute(requestId);
 
     expect(logger.metric).toHaveBeenCalledWith(
-      expect.objectContaining({ metric: 'cache.miss', key: CACHE_KEY, requestId }),
+      expect.objectContaining({
+        metric: 'cache.miss',
+        key: CACHE_KEY,
+        requestId,
+      }),
     );
   });
 });
