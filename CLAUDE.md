@@ -59,7 +59,7 @@ Toda classe que contém lógica de negócio **deve** ter arquivo `.spec.ts` corr
 - `Query`: só tem teste se contiver lógica observável — cache-aside, validação de existência, transformação de dados. Query que apenas delega ao repositório não precisa de teste
 - Dependências externas (repositórios, cache, fila) devem ser mockadas com `vitest-mock-extended`
 - Os testes ficam em `test/` na raiz do projeto, espelhando a estrutura de pastas do módulo correspondente (ex: `test/modules/products/application/queries/get-products.query.spec.ts`)
-- Nomenclatura de `describe`/`it` em português, descrevendo o comportamento esperado (ex: `it('deve lançar erro quando estoque for insuficiente')`)
+- Nomenclatura de `describe`/`it` em inglês, descrevendo o comportamento esperado (ex: `it('should throw when stock is insufficient')`)
 - Nunca testar detalhes de implementação — testar comportamento observável
 - Mínimo de cobertura esperado: todos os branches de negócio (condicionais de domínio)
 
