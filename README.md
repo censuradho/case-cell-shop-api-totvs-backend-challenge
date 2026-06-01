@@ -29,6 +29,11 @@ docker compose -f docker-compose.prod.yml up --build
 
 Aguardar a mensagem `Starting application...` nos logs. Swagger disponível em: `http://localhost:3333/docs`
 
+| Interface | URL |
+|---|---|
+| Swagger (API docs) | `http://localhost:3333/docs` |
+| Bull Board (filas) | `http://localhost:3333/admin/queues` |
+
 > **Nota:** a documentação Swagger está exposta sem autenticação exclusivamente para fins de avaliação. Em produção real, o `/docs` estaria no mínimo protegido por HTTP Basic Auth ou desabilitado completamente.
 
 Para encerrar:
