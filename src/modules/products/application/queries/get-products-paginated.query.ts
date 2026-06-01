@@ -9,7 +9,7 @@ import type {
 } from '@/shared/pagination/cursor-pagination.types';
 import type { Product } from '../../domain/product.entity';
 
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 60 * 1000;
 
 @Injectable()
 export class GetProductsPaginatedQuery {
