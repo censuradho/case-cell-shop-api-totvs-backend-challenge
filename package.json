@@ -26,8 +26,7 @@
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy",
-    "prepare": "husky"
+    "prisma:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@bull-board/api": "^7.1.5",
