@@ -67,7 +67,7 @@ export class CreateOrderUseCase {
     });
 
     const total = dto.items.reduce((sum, item) => {
-      const price = productMap.get(item.productId)!.price as Decimal;
+      const price = productMap.get(item.productId)!.price;
       return sum.add(price.mul(item.quantity));
     }, new Decimal(0));
 
@@ -98,7 +98,7 @@ export class CreateOrderUseCase {
           id: nanoid(),
           productId: item.productId,
           quantity: item.quantity,
-          unitPrice: productMap.get(item.productId)!.price as Decimal,
+          unitPrice: productMap.get(item.productId)!.price,
         })),
       });
     });
