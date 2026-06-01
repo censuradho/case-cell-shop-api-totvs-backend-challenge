@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/client';
 import type { Queue } from 'bullmq';
+import type { Cache } from 'cache-manager';
 import { CreateOrderUseCase } from '@/modules/orders/application/use-cases/create-order.use-case';
 import type { IOrderRepository } from '@/modules/orders/domain/ports/order.repository';
 import type {
@@ -61,6 +62,7 @@ describe('CreateOrderUseCase', () => {
   let orderRepository: MockProxy<IOrderRepository>;
   let unitOfWork: MockProxy<IOrderUnitOfWork>;
   let productRepository: MockProxy<IProductRepository>;
+  let cacheManager: MockProxy<Cache>;
   let checkoutQueue: MockProxy<Queue>;
   let logger: MockProxy<AppLogger>;
 
@@ -71,6 +73,7 @@ describe('CreateOrderUseCase', () => {
     orderRepository = mock<IOrderRepository>();
     unitOfWork = mock<IOrderUnitOfWork>();
     productRepository = mock<IProductRepository>();
+    cacheManager = mock<Cache>();
     checkoutQueue = mock<Queue>();
     logger = mock<AppLogger>();
 
@@ -78,12 +81,14 @@ describe('CreateOrderUseCase', () => {
       orderRepository,
       unitOfWork,
       productRepository,
+      cacheManager,
       checkoutQueue,
       logger,
     );
 
     orderRepository.findByIdempotencyKey.mockResolvedValue(null);
     productRepository.findManyById.mockResolvedValue([makeProduct()]);
+    cacheManager.del.mockResolvedValue(true);
     checkoutQueue.add.mockResolvedValue({} as never);
 
     unitOfWork.run.mockImplementation(async (work) => {
