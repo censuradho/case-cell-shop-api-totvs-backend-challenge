@@ -1,21 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import {
-  PRODUCT_REPOSITORY,
-  type IProductRepository,
-} from '../../domain/ports/product.repository';
+import { IProductRepository } from '../../domain/ports/product.repository';
 import { AppLogger } from '@/shared/observability/app-logger.service';
 import type { Product } from '../../domain/product.entity';
 
 const CACHE_KEY = 'products:all';
-const CACHE_TTL_MS = 60 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 @Injectable()
 export class GetProductsQuery {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: IProductRepository,
     private readonly logger: AppLogger,
   ) {}

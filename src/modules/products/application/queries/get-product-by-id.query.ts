@@ -1,21 +1,17 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import {
-  PRODUCT_REPOSITORY,
-  type IProductRepository,
-} from '../../domain/ports/product.repository';
+import { IProductRepository } from '../../domain/ports/product.repository';
 import { AppLogger } from '@/shared/observability/app-logger.service';
 import type { Product } from '../../domain/product.entity';
 import { PRODUCT_ERRORS } from '../../domain/errors/product.errors';
 
-const CACHE_TTL_MS = 60 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 @Injectable()
 export class GetProductByIdQuery {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: IProductRepository,
     private readonly logger: AppLogger,
   ) {}
