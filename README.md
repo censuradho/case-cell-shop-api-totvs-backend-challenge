@@ -115,6 +115,12 @@ Cenários cobertos:
 
 ## Endpoints
 
+### Health
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/v1/health` | Verifica conectividade com banco e Redis. Retorna `200` se tudo ok, `503` se degradado |
+
 ### Products
 
 | Método | Rota | Descrição |
