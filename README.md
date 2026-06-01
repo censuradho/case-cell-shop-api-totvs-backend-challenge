@@ -1,6 +1,6 @@
 # CaseCellShop API
 
-API backend para o desafio técnico CaseCellShop — Nível Pleno.
+API backend para o desafio técnico CaseCellShop: Nível Pleno.
 
 > Os critérios de aceite, escopo e regras de negócio estão descritos em [DESAFIO.md](./DESAFIO.md).
 
@@ -19,7 +19,7 @@ API backend para o desafio técnico CaseCellShop — Nível Pleno.
 
 ## Como rodar
 
-### Opção 1 — Docker (recomendado para avaliação)
+### Opção 1: Docker (recomendado para avaliação)
 
 Apenas [Docker](https://www.docker.com/) instalado. Sobe tudo automaticamente: banco, cache, migrations, seed e API.
 
@@ -27,7 +27,7 @@ Apenas [Docker](https://www.docker.com/) instalado. Sobe tudo automaticamente: b
 docker compose -f docker-compose.prod.yml up --build
 ```
 
-Aguardar a mensagem `Starting application...` nos logs. Swagger disponível em: `http://localhost:3333/docs`
+Aguardar a mensagem `Starting application...` nos logs.
 
 | Interface | URL |
 |---|---|
@@ -43,7 +43,7 @@ docker compose -f docker-compose.prod.yml down -v
 
 ---
 
-### Opção 2 — Local (desenvolvimento)
+### Opção 2: Local (desenvolvimento)
 
 ### Pré-requisitos
 
@@ -99,7 +99,7 @@ pnpm test:cov    # cobertura
 
 ### Testes de integração
 
-Requerem containers dedicados (porta `5435` para postgres e `6399` para redis — não conflitam com o ambiente de dev).
+Requerem containers dedicados (porta `5435` para postgres e `6399` para redis, sem conflito com o ambiente de dev).
 
 ```bash
 # 1. Subir containers de teste
@@ -113,8 +113,10 @@ pnpm test:integration:down
 ```
 
 Cenários cobertos:
-- **Concorrência de estoque** — `N + 3` checkouts simultâneos para um produto com `stock = N`; valida que exatamente `N` pedidos são criados e o estoque final é `0`
-- **Cache-aside** — valida cache miss → dado persistido no Redis → segunda chamada servida do cache mesmo com banco vazio; e que resultado vazio `[]` também é cacheado
+
+**Concorrência de estoque:** `N + 3` checkouts simultâneos para um produto com `stock = N`, validando que exatamente `N` reservas são aceitas e o estoque final é `0`.
+
+**Cache-aside:** valida cache miss, persistência do dado no Redis e segunda chamada servida do cache mesmo com banco vazio. Inclui o caso de resultado vazio `[]` sendo cacheado.
 
 ---
 
@@ -200,7 +202,7 @@ Todo log segue o formato:
 }
 ```
 
-O `requestId` é gerado por request no `RequestIdMiddleware` e propagado até o worker via payload do job BullMQ — criando um trace distribuído de ponta a ponta.
+O `requestId` é gerado por request no `RequestIdMiddleware` e propagado até o worker via payload do job BullMQ, criando um trace distribuído de ponta a ponta.
 
 ### Métricas
 
@@ -216,34 +218,34 @@ Emitidas como logs estruturados com campo `metric`:
 ### Exemplo de dashboard Datadog
 
 ```
-Widget 1 — Cache hit rate
+Widget 1: Cache hit rate
   Query: sum:cache.hit / (sum:cache.hit + sum:cache.miss) * 100
   Alerta: < 70% por 5 min → warning | < 50% → critical
 
-Widget 2 — Checkout success rate
+Widget 2: Checkout success rate
   Query: sum:queue.job.success / (sum:queue.job.success + sum:queue.job.failure) * 100
   Alerta: < 95% por 10 min → critical
 
-Widget 3 — Latência p99 GET /products
+Widget 3: Latência p99 GET /products
   SLO: p99 < 200ms (cache hit) | < 1000ms (cache miss)
 
-Widget 4 — Pedidos por status
+Widget 4: Pedidos por status
   Query: count:order.status{*} by {status}
 ```
 
-### Runbook — Job failure no checkout
+### Runbook: Job failure no checkout
 
 1. Verificar logs com `metric:queue.job.failure` no último intervalo
 2. Identificar `orderId` e `requestId` do job com falha
-3. Verificar `order.status` no banco — se `FAILED`, confirmar com cliente
+3. Verificar `order.status` no banco. Se `FAILED`, confirmar com cliente
 4. Reprocessar manualmente: novo `checkoutQueue.add` com mesmo `orderId`
 5. Monitorar transição `PENDING → PROCESSING → COMPLETED` nos logs
 
 ---
 
-## Parte 1.A — Respostas Conceituais
+## Parte 1.A: Respostas Conceituais
 
-### Pergunta 1 — Diagnóstico, trade-offs e arquitetura alvo
+### Pergunta 1: Diagnóstico, trade-offs e arquitetura alvo
 
 #### Problema 1: Performance da vitrine
 
@@ -294,7 +296,7 @@ Widget 4 — Pedidos por status
 | Saga pattern | Alta | Boa | Alta |
 | Timeout + retry síncrono | Baixa | Ruim | Baixa |
 
-**Escolha:** BullMQ com retry exponencial (3 tentativas). O cliente recebe 202 imediatamente e consulta o status. O pedido existe no banco desde o início — sem pedido fantasma.
+**Escolha:** BullMQ com retry exponencial (3 tentativas). O cliente recebe 202 imediatamente e consulta o status. O pedido existe no banco desde o início, sem pedido fantasma.
 
 #### Visão de arquitetura 30–90 dias
 
@@ -312,11 +314,11 @@ Cliente
   └── Job de reconciliação (cron) ←── ERP MySQL (read-only)
 ```
 
-**Reconciliação:** job agendado que sincroniza estoque do ERP MySQL para o PostgreSQL local — garante que a reserva atômica local reflete a realidade do ERP.
+**Reconciliação:** job agendado que sincroniza estoque do ERP MySQL para o PostgreSQL local, garantindo que a reserva atômica local reflete a realidade do ERP.
 
 ---
 
-### Pergunta 2 — Cache, invalidação e performance da vitrine
+### Pergunta 2: Cache, invalidação e performance da vitrine
 
 **Onde colocar cache:** camada de query (`GetProductsQuery`) no Redis, chaves `products:all` e `products:{id}`. Evita queries ao banco sem passar pelo controller.
 
@@ -327,7 +329,7 @@ Cliente
 
 **Cache stampede:** com alto volume, um lock distribuído (`SET NX EX` no Redis) antes da query ao banco previne múltiplos requests simultâneos reconstruindo o mesmo cache entry.
 
-**Fallback:** se o Redis estiver indisponível, `cacheManager.get` pode ser capturado para fallthrough direto ao banco — degradação graciosa.
+**Fallback:** se o Redis estiver indisponível, `cacheManager.get` pode ser capturado para fallthrough direto ao banco, com degradação graciosa.
 
 **Métricas para validar ganho sem dado obsoleto:**
 
@@ -340,7 +342,7 @@ Cliente
 
 ---
 
-### Pergunta 3 — Observabilidade
+### Pergunta 3: Observabilidade
 
 **Logs estruturados — campos obrigatórios:**
 
@@ -351,7 +353,7 @@ Cliente
   "requestId": "req-abc123",
   "orderId": "order-xyz",
   "context": "CheckoutProcessor",
-  "message": "Job received — starting checkout processing",
+  "message": "Job received - starting checkout processing",
   "attemptsMade": 0
 }
 ```
@@ -374,7 +376,7 @@ counter: erp_errors_total
 histogram: erp_response_time_ms
 ```
 
-**Traces — GET /products:**
+**Traces: GET /products**
 ```
 [HTTP Request] requestId=abc123
   └── [GetProductsQuery]
@@ -382,7 +384,7 @@ histogram: erp_response_time_ms
         └── [IProductRepository.findAll] (se miss)
 ```
 
-**Traces — POST /checkout:**
+**Traces: POST /checkout**
 ```
 [HTTP Request] requestId=abc123
   └── [CreateOrderUseCase]
@@ -405,7 +407,7 @@ histogram: erp_response_time_ms
 
 ---
 
-### Pergunta 4 — Concorrência, estoque e idempotência
+### Pergunta 4: Concorrência, estoque e idempotência
 
 **Por que checagem simples é insuficiente:**
 
@@ -420,28 +422,28 @@ T2: UPDATE stock = stock - 1    → -1  ← overselling
 
 | Abordagem | Funcionamento | Trade-off |
 |---|---|---|
-| Atomic UPDATE (escolhida) | `UPDATE WHERE stock >= qty` — atômico | Sem overhead de lock, ideal para alta concorrência |
+| Atomic UPDATE (escolhida) | `UPDATE WHERE stock >= qty`, atômico | Sem overhead de lock, ideal para alta concorrência |
 | Lock pessimista | `SELECT FOR UPDATE` | Consistência forte, throughput reduzido |
 | Reserva de estoque | Reserve → Pay → Confirm | Mais robusto, complexidade alta para este escopo |
 | Distributed lock (Redis) | `SET NX EX` | Adiciona latência e ponto de falha extra |
 
-**Idempotência:** `Idempotency-Key` no header + `@unique` no banco. Retry ou duplo clique retorna o pedido existente sem reprocessar — protege contra cobrança duplicada e reserva dupla.
+**Idempotência:** `Idempotency-Key` no header + `@unique` no banco. Retry ou duplo clique retorna o pedido existente sem reprocessar, protegendo contra cobrança duplicada e reserva dupla.
 
 **Como testar:** N requests simultâneos para produto com `stock = N/2`. Após todos completarem: exatamente `N/2` pedidos criados e `stock = 0`.
 
 ---
 
-### Pergunta 5 — Mensageria, resiliência, contrato e IA
+### Pergunta 5: Mensageria, resiliência, contrato e IA
 
-**Publicar antes ou depois de gravar o pedido:** sempre **depois**. O pedido é persistido com status `PENDING`, depois o job é publicado. Se a fila cair antes do banco persistir, o worker processaria um pedido inexistente (**pedido fantasma**). Na ordem correta, se a fila cair após persistir, temos um pedido `PENDING` sem processamento — recuperável por reconciliação.
+**Publicar antes ou depois de gravar o pedido:** sempre **depois**. O pedido é persistido com status `PENDING` e só então o job é publicado. Se a fila cair antes do banco persistir, o worker processaria um pedido inexistente (pedido fantasma). Na ordem correta, se a fila cair após persistir, temos um pedido `PENDING` sem processamento, recuperável por reconciliação.
 
-**Prevenção de pedido fantasma:** o worker atualiza o status do pedido — se o `orderId` não existir no banco, o job falha sem efeito colateral.
+**Prevenção de pedido fantasma:** o worker atualiza o status do pedido. Se o `orderId` não existir no banco, o job falha sem efeito colateral.
 
-**Prevenção de mensagem fantasma:** `jobId: orderId` no BullMQ garante deduplicação — mesmo que `checkoutQueue.add` seja chamado duas vezes com o mesmo `orderId`, apenas um job é enfileirado.
+**Prevenção de mensagem fantasma:** `jobId: orderId` no BullMQ garante deduplicação. Mesmo que `checkoutQueue.add` seja chamado duas vezes com o mesmo `orderId`, apenas um job é enfileirado.
 
 **Retry:** 3 tentativas com backoff exponencial (1s, 2s, 4s). Após esgotar, `onFailed` marca o pedido como `FAILED` e emite métrica.
 
-**Rastreabilidade:** `requestId` viaja como payload do job — cada log do worker referencia o request HTTP original sem necessidade de OpenTelemetry.
+**Rastreabilidade:** `requestId` viaja como payload do job. Cada log do worker referencia o request HTTP original sem necessidade de OpenTelemetry.
 
 **OpenAPI:** documentação completa via Swagger em `/docs` com schemas de sucesso e erro para todos os endpoints.
 
