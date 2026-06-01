@@ -2,8 +2,6 @@ import type { Decimal } from '@prisma/client/runtime/client';
 import { UnitOfWork } from '@/application/unit-of-work';
 import type { Order } from '../order.entity';
 
-export const ORDER_UNIT_OF_WORK = 'ORDER_UNIT_OF_WORK' as const;
-
 export interface CreateOrderData {
   id: string;
   idempotencyKey: string;
@@ -21,4 +19,4 @@ export interface IOrderTransactionContext {
   createOrder(data: CreateOrderData): Promise<Order>;
 }
 
-export interface IOrderUnitOfWork extends UnitOfWork<IOrderTransactionContext> {}
+export abstract class IOrderUnitOfWork extends UnitOfWork<IOrderTransactionContext> {}

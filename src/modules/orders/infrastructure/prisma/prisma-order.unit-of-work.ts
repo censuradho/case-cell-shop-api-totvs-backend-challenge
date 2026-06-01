@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/shared/database/prisma.service';
-import { UnitOfWork } from '@/application/unit-of-work';
 import type {
   IOrderUnitOfWork,
   IOrderTransactionContext,
@@ -10,13 +9,8 @@ import type { Order } from '../../domain/order.entity';
 import { OrderStatus } from '../../domain/order-status.enum';
 
 @Injectable()
-export class PrismaOrderUnitOfWork
-  extends UnitOfWork<IOrderTransactionContext>
-  implements IOrderUnitOfWork
-{
-  constructor(private readonly prisma: PrismaService) {
-    super();
-  }
+export class PrismaOrderUnitOfWork implements IOrderUnitOfWork {
+  constructor(private readonly prisma: PrismaService) {}
 
   async run<T>(
     work: (ctx: IOrderTransactionContext) => Promise<T>,

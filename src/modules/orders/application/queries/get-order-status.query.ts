@@ -1,8 +1,5 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-  ORDER_REPOSITORY,
-  type IOrderRepository,
-} from '../../domain/ports/order.repository';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { IOrderRepository } from '../../domain/ports/order.repository';
 import { AppLogger } from '@/shared/observability/app-logger.service';
 import { ORDER_ERRORS } from '../../domain/errors/order.errors';
 import type { Order } from '../../domain/order.entity';
@@ -10,7 +7,7 @@ import type { Order } from '../../domain/order.entity';
 @Injectable()
 export class GetOrderStatusQuery {
   constructor(
-    @Inject(ORDER_REPOSITORY) private readonly orderRepository: IOrderRepository,
+    private readonly orderRepository: IOrderRepository,
     private readonly logger: AppLogger,
   ) {}
 

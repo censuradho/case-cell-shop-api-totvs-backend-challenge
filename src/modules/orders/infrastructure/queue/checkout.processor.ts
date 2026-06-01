@@ -1,12 +1,8 @@
-import { Inject } from '@nestjs/common';
+import { AppLogger } from '@/shared/observability/app-logger.service';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { AppLogger } from '@/shared/observability/app-logger.service';
-import {
-  ORDER_REPOSITORY,
-  type IOrderRepository,
-} from '../../domain/ports/order.repository';
 import { OrderStatus } from '../../domain/order-status.enum';
+import { IOrderRepository } from '../../domain/ports/order.repository';
 import { CHECKOUT_QUEUE } from '../../orders.constants';
 
 interface CheckoutJobData {
@@ -17,7 +13,6 @@ interface CheckoutJobData {
 @Processor(CHECKOUT_QUEUE)
 export class CheckoutProcessor extends WorkerHost {
   constructor(
-    @Inject(ORDER_REPOSITORY)
     private readonly orderRepository: IOrderRepository,
     private readonly logger: AppLogger,
   ) {

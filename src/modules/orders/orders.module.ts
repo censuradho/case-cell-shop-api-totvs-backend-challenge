@@ -3,8 +3,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { OrdersController } from './presentation/orders.controller';
 import { CreateOrderUseCase } from './application/use-cases/create-order.use-case';
 import { GetOrderStatusQuery } from './application/queries/get-order-status.query';
-import { ORDER_REPOSITORY } from './domain/ports/order.repository';
-import { ORDER_UNIT_OF_WORK } from './domain/ports/order.unit-of-work';
+import { IOrderRepository } from './domain/ports/order.repository';
+import { IOrderUnitOfWork } from './domain/ports/order.unit-of-work';
 import { PrismaOrderRepository } from './infrastructure/prisma/prisma-order.repository';
 import { PrismaOrderUnitOfWork } from './infrastructure/prisma/prisma-order.unit-of-work';
 import { CheckoutProcessor } from './infrastructure/queue/checkout.processor';
@@ -18,8 +18,8 @@ import { CHECKOUT_QUEUE } from './orders.constants';
     CreateOrderUseCase,
     GetOrderStatusQuery,
     CheckoutProcessor,
-    { provide: ORDER_REPOSITORY, useClass: PrismaOrderRepository },
-    { provide: ORDER_UNIT_OF_WORK, useClass: PrismaOrderUnitOfWork },
+    { provide: IOrderRepository, useClass: PrismaOrderRepository },
+    { provide: IOrderUnitOfWork, useClass: PrismaOrderUnitOfWork },
   ],
 })
 export class OrdersModule {}

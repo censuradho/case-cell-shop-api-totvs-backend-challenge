@@ -5,22 +5,15 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Decimal } from '@prisma/client/runtime/client';
+import type { Cache } from 'cache-manager';
 import { nanoid } from 'nanoid';
-import {
-  ORDER_REPOSITORY,
-  type IOrderRepository,
-} from '../../domain/ports/order.repository';
-import {
-  ORDER_UNIT_OF_WORK,
-  type IOrderUnitOfWork,
-} from '../../domain/ports/order.unit-of-work';
-import {
-  PRODUCT_REPOSITORY,
-  type IProductRepository,
-} from '@/modules/products/domain/ports/product.repository';
+import { IOrderRepository } from '../../domain/ports/order.repository';
+import { IOrderUnitOfWork } from '../../domain/ports/order.unit-of-work';
+import { IProductRepository } from '@/modules/products/domain/ports/product.repository';
 import { AppLogger } from '@/shared/observability/app-logger.service';
 import { ORDER_ERRORS } from '../../domain/errors/order.errors';
 import { CHECKOUT_QUEUE } from '../../orders.constants';
@@ -30,11 +23,10 @@ import type { Order } from '../../domain/order.entity';
 @Injectable()
 export class CreateOrderUseCase {
   constructor(
-    @Inject(ORDER_REPOSITORY)
     private readonly orderRepository: IOrderRepository,
-    @Inject(ORDER_UNIT_OF_WORK) private readonly unitOfWork: IOrderUnitOfWork,
-    @Inject(PRODUCT_REPOSITORY)
+    private readonly unitOfWork: IOrderUnitOfWork,
     private readonly productRepository: IProductRepository,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectQueue(CHECKOUT_QUEUE) private readonly checkoutQueue: Queue,
     private readonly logger: AppLogger,
   ) {}
@@ -111,6 +103,8 @@ export class CreateOrderUseCase {
       });
     });
 
+    await this.invalidateProductCache(productIds, requestId);
+
     await this.checkoutQueue.add(
       'process-checkout',
       { orderId: order.id, requestId },
@@ -129,5 +123,20 @@ export class CreateOrderUseCase {
     });
 
     return order;
+  }
+
+  private async invalidateProductCache(
+    productIds: string[],
+    requestId: string,
+  ): Promise<void> {
+    const keys = ['products:all', ...productIds.map((id) => `products:${id}`)];
+
+    await Promise.all(keys.map((key) => this.cacheManager.del(key)));
+
+    this.logger.log({
+      requestId,
+      message: `Cache invalidado para ${keys.length} chaves após reserva de estoque`,
+      context: 'CreateOrderUseCase',
+    });
   }
 }
